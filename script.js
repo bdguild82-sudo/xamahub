@@ -4,67 +4,85 @@ const header = document.getElementById("header");
 const site = document.getElementById("site");
 const main = document.getElementById("main");
 
-window.onload=()=>{
-  setTimeout(()=>{
+window.onload = () => {
+  setTimeout(() => {
     loading.classList.add("fadeOut");
-    setTimeout(()=>{
-      loading.style.display="none";
-      lock.style.display="flex";
-    },1000);
-  },2500);
+    setTimeout(() => {
+      loading.style.display = "none";
+      lock.style.display = "flex";
+      document.getElementById("passwordInput").focus();
+    }, 1000);
+  }, 2500);
 };
 
-const input=document.getElementById("passwordInput");
-const btn=document.getElementById("passwordBtn");
-const result=document.getElementById("passwordResult");
-const tipsBox=document.getElementById("passwordTips");
+/* PASSWORD SYSTEM */
+const input = document.getElementById("passwordInput");
+const btn = document.getElementById("passwordBtn");
+const result = document.getElementById("passwordResult");
+const tipsBox = document.getElementById("passwordTips");
 
-const tips=[
- "♖♖Tucker get Off Chess♖♖",
- "🎆Happy New Year Bois🎆",
- "Obama Have Dihhh💔🥀",
- "Your In The Epstien File📁",
- "Indian Pajeet On Fire🔥"
+const PASSWORD = "XAMAKEYAUTH";
+
+const tips = [
+  "♖♖Tucker get Off Chess♖♖",
+  "🎆Happy New Year Bois🎆",
+  "Obama Have Dihhh💔🥀",
+  "Your In The Epstien File📁",
+  "Indian Pajeet On Fire🔥"
 ];
 
-let tip=0;
-setInterval(()=>{
-  tipsBox.textContent=tips[tip++%tips.length];
-  tipsBox.style.opacity=1;
-  setTimeout(()=>tipsBox.style.opacity=0,2000);
-},5000);
+let tipIndex = 0;
 
-btn.onclick=check;
-input.onkeydown=e=>e.key==="Enter"&&check();
+setInterval(() => {
+  tipsBox.textContent = tips[tipIndex++ % tips.length];
+  tipsBox.style.opacity = 1;
+  setTimeout(() => tipsBox.style.opacity = 0, 2000);
+}, 5000);
 
-function check(){
-  if(input.value==="XAMAKEYAUTH"){
-    result.textContent="Unlocked...";
-    lock.style.display="none";
-    loading.style.display="flex";
-    setTimeout(()=>{
+btn.onclick = checkPassword;
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") checkPassword();
+});
+
+function checkPassword(){
+  if(input.value === PASSWORD){
+    result.style.color = "#4da3ff";
+    result.textContent = "Unlocked...";
+    lock.style.display = "none";
+
+    loading.style.display = "flex";
+    loading.classList.remove("fadeOut");
+
+    setTimeout(() => {
       loading.classList.add("fadeOut");
-      header.style.display="flex";
-      site.style.display="flex";
-      home();
-    },2000);
-  }else result.textContent="Wrong Password";
+      setTimeout(() => {
+        loading.style.display = "none";
+        header.style.display = "flex";
+        site.style.display = "flex";
+        home();
+      }, 1000);
+    }, 1500);
+  } else {
+    result.style.color = "red";
+    result.textContent = "Wrong Password";
+  }
 }
 
+/* MAIN CONTENT */
 function setMain(html){
   main.classList.remove("visible");
-  setTimeout(()=>{
-    main.innerHTML=html;
+  setTimeout(() => {
+    main.innerHTML = html;
     main.classList.add("visible");
-  },50);
+  }, 50);
 }
 
 function home(){
   setMain(`
     <div class="game-grid">
-      <img src="https://img.poki-cdn.com/.../drive-mad.png">
-      <img src="https://img.poki-cdn.com/.../hill-climb-racing-lite.png">
-      <img src="https://img.poki-cdn.com/.../blacktop-police-chase.png">
+      <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=314,height=314,fit=cover,f=auto/ec1d51ed9ca8ab3698524f7daba12744/drive-mad.png">
+      <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=204,height=204,fit=cover,f=auto/b87616bb88c0e3cb4c150c59fdc767fa/hill-climb-racing-lite.png">
+      <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=204,height=204,fit=cover,f=auto/5c613c3572ec23612e351745bc986579/blacktop-police-chase.png">
     </div>
   `);
 }
