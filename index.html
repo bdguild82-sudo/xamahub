@@ -5,6 +5,7 @@
 
 <title>XAMAS PROXY V2.014</title>
 
+<!-- TAB ICON -->
 <link id="tabIcon" rel="icon" type="image/png"
       href="https://companieslogo.com/img/orig/PWSC-358b9060.png?t=1720244493">
 
@@ -17,19 +18,19 @@ body{
   overflow:hidden;
   color:white;
 
-  /* NEW DARK BLUE GRADIENT */
+  /* DARK BLUE GRADIENT (Deep Navy → Royal Blue → Deep Navy) */
   background: linear-gradient(135deg, #000814, #001d3d, #003566, #001d3d, #000814);
   background-size: 300% 300%;
   animation: gradientMove 12s ease infinite;
 }
 
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes gradientMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
 
-/* LOADING SCREEN */
+/* LOADING SCREEN (used twice: before password, after correct password) */
 #loadingScreen{
   position:fixed;
   top:0;left:0;
@@ -40,8 +41,7 @@ body{
   align-items:center;
   flex-direction:column;
   z-index:9999;
-  animation:fadeOut 1s ease forwards;
-  animation-delay:2.5s;
+  opacity:1;
 }
 
 .loader{
@@ -56,30 +56,108 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeOut{to{opacity:0;visibility:hidden}}
 
+/* PASSWORD LOCK SCREEN */
+.lock-screen{
+  position:fixed;
+  top:0;left:0;
+  width:100vw;height:100vh;
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,0.65);
+  z-index:9998;
+}
+
+.lock-box{
+  max-width:700px;
+  width:90vw;
+  padding:40px;
+  border-radius:16px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:0 0 30px rgba(77,163,255,0.4);
+  text-align:center;
+  font-size:18px;
+  line-height:1.5;
+}
+
+.lock-title{
+  font-size:36px;
+  font-weight:900;
+  margin-bottom:20px;
+  text-shadow:0 0 15px #4da3ff;
+}
+
+.input-container{
+  display:flex;
+  justify-content:center;
+  margin-bottom:15px;
+}
+
+.lock-screen input{
+  flex:1;
+  padding:12px 15px;
+  border-radius:10px 0 0 10px;
+  border:none;
+  outline:none;
+  font-size:18px;
+  color:white;
+  background:rgba(255,255,255,0.1);
+}
+
+.lock-screen button{
+  padding:12px 15px;
+  border-radius:0 10px 10px 0;
+  border:none;
+  cursor:pointer;
+  background:#4da3ff;
+  color:white;
+  font-size:20px;
+}
+
+#passwordResult{
+  margin-top:10px;
+  font-size:18px;
+  color:red;
+}
+
+.tips{
+  margin-top:20px;
+  font-size:16px;
+  font-style:italic;
+  color:#4da3ff;
+  opacity:0;
+  transition:opacity 1s ease-in-out;
+}
+
 /* HEADER */
 .header{
   position:fixed;
   top:0;left:0;
   width:100%;
   height:60px;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   font-size:32px;
   font-weight:900;
   letter-spacing:2px;
-
   background:rgba(0,0,0,0.4);
   border-bottom:1px solid rgba(255,255,255,0.15);
-
   text-shadow:0 0 15px #4da3ff;
   opacity:0;
-  animation:fadeIn 1.2s ease forwards;
+  animation:fadeInHeader 1.2s ease forwards;
+}
+
+@keyframes fadeInHeader{
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
 /* LAYOUT */
 .container{
-  display:flex;
+  display:none;
   height:calc(100vh - 60px);
   margin-top:60px;
 }
@@ -179,19 +257,33 @@ body{
 
 <body>
 
-<!-- LOADING SCREEN -->
+<!-- LOADING SCREEN (FIRST + AFTER PASSWORD) -->
 <div id="loadingScreen">
   <div class="loader"></div>
 </div>
 
+<!-- PASSWORD LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-title">Enter Password</div>
+
+    <div class="input-container">
+      <input id="passwordInput" type="password" placeholder="Enter code...">
+      <button id="passwordBtn">🔒</button>
+    </div>
+
+    <div id="passwordResult"></div>
+    <div id="passwordTips" class="tips"></div>
+  </div>
+</div>
+
 <!-- HEADER -->
-<div class="header" id="header" style="display:none;">
+<div class="header" id="header">
   XAMAS PROXY V2.014
 </div>
 
 <!-- MAIN SITE -->
-<div class="container" id="site" style="display:none;">
-
+<div class="container" id="site">
   <div class="sidebar">
     <h3>XAMAS PROXY V2.014</h3>
 
@@ -206,31 +298,111 @@ body{
 </div>
 
 <script>
-/* UNLOCK SYSTEM */
-setTimeout(()=>{
-  document.getElementById("header").style.display="flex";
-  document.getElementById("site").style.display="flex";
-  home();
-},2600);
+/* FIRST LOAD: show loading, then password screen */
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById("loadingScreen").style.animation = "fadeOut 1s ease forwards";
+    setTimeout(() => {
+      document.getElementById("loadingScreen").style.display = "none";
+      document.getElementById("lockScreen").style.display = "flex";
+    }, 1000);
+  }, 2500);
+};
+
+/* PASSWORD SYSTEM */
+const lock = document.getElementById("lockScreen");
+const input = document.getElementById("passwordInput");
+const btn = document.getElementById("passwordBtn");
+const result = document.getElementById("passwordResult");
+const tipsContainer = document.getElementById("passwordTips");
+
+const tips = [
+  "♖♖Tucker get Off Chess♖♖",
+  "🎆Happy New Year Bois🎆",
+  "Obama Have Dihhh💔🥀",
+  "Your In The Epstien File bbg📁.",
+  "Indian Pajeet On Fire🔥"
+];
+
+let currentTipIndex = 0;
+
+btn.onclick = checkPassword;
+input.addEventListener("keydown", e => {
+  if(e.key === "Enter") checkPassword();
+});
+
+function checkPassword(){
+  if(input.value.trim() === "XAMAKEYAUTH"){
+    result.style.color="#4da3ff";
+    result.textContent="Password Correct! Unlocking...";
+
+    setTimeout(() => {
+      // hide password box
+      lock.style.display = "none";
+
+      // show loading again
+      const loader = document.getElementById("loadingScreen");
+      loader.style.display = "flex";
+      loader.style.opacity = "1";
+      loader.style.animation = ""; // reset animation
+
+      setTimeout(() => {
+        loader.style.animation = "fadeOut 1s ease forwards";
+
+        setTimeout(() => {
+          loader.style.display = "none";
+          document.getElementById("header").style.display = "flex";
+          document.getElementById("site").style.display = "flex";
+          home();
+        }, 1000);
+
+      }, 2000); // length of second loading
+    }, 800);
+
+  } else {
+    result.style.color="red";
+    result.textContent="🖕Skill Issue Or Your A Brokie Js Pay Already🖕";
+  }
+}
+
+function showTip(){
+  tipsContainer.textContent = tips[currentTipIndex];
+  tipsContainer.style.opacity = 1;
+
+  setTimeout(() => {
+    tipsContainer.style.opacity = 0;
+  }, 2000);
+
+  currentTipIndex = (currentTipIndex + 1) % tips.length;
+}
+setInterval(showTip, 5000);
+
+/* MAIN PAGES */
+
+function setMainContent(html){
+  const main = document.getElementById("main");
+  main.classList.remove("visible");
+  setTimeout(() => {
+    main.innerHTML = html;
+    main.classList.add("visible");
+  }, 50);
+}
 
 /* HOME PAGE */
 function home(){
-  const main=document.getElementById("main");
-  main.innerHTML=`
+  setMainContent(`
     <div class="game-grid">
       <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=314,height=314,fit=cover,f=auto/ec1d51ed9ca8ab3698524f7daba12744/drive-mad.png">
       <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=204,height=204,fit=cover,f=auto/b87616bb88c0e3cb4c150c59fdc767fa/hill-climb-racing-lite.png">
       <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=204,height=204,fit=cover,f=auto/5c613c3572ec23612e351745bc986579/blacktop-police-chase.png">
       <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,width=204,height=204,fit=cover,f=auto/02018885c1521dd2830683a0ecc86440/watermelon-drop.png">
     </div>
-  `;
-  main.classList.add("visible");
+  `);
 }
 
 /* ABOUT PAGE */
 function about(){
-  const main=document.getElementById("main");
-  main.innerHTML=`
+  setMainContent(`
     <div class="about-box">
       <div class="about-title">About Me</div>
       <p>Welcome! Thanks for looking here, Freaky Boy 👋</p>
@@ -238,34 +410,27 @@ function about(){
       <p>Only for Educational Purpose & School Bypassing Protocols</p>
       <p>W <strong>Bruh</strong> ❤️</p>
     </div>
-  `;
-  main.classList.add("visible");
+  `);
 }
 
-/* SEARCH ENGINE — AUTO LOAD IFRAME */
+/* SEARCH ENGINE — AUTO IFRAME */
 function searchPage(){
-  const main=document.getElementById("main");
-  main.innerHTML=`
+  setMainContent(`
     <iframe src="https://815moniquelane.cfd"
       style="width:80%;height:90%;border:none;border-radius:20px;
       box-shadow:0 0 25px rgba(77,163,255,0.6);"></iframe>
-  `;
-  main.classList.add("visible");
+  `);
 }
 
 /* AI PAGE */
 function openAI(){
-  const main=document.getElementById("main");
-  main.innerHTML=`
+  setMainContent(`
     <iframe src="https://815moniquelane.cfd/algebra.html"
       style="width:60%;height:90%;border:none;border-radius:20px;
       box-shadow:0 0 25px rgba(77,163,255,0.6);"></iframe>
-  `;
-  main.classList.add("visible");
+  `);
 }
 </script>
 
 </body>
 </html>
-
-
